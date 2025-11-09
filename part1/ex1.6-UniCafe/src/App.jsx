@@ -3,11 +3,15 @@ import { useState } from 'react'
 const Button = ({ onClick, text }) => <button onClick={onClick}>{text}</button>
 
 const Statistics = ({good, neutral, bad}) => {
+  const total = good + neutral + bad
   return (
     <div>
       <div>good {good}</div>
       <div>neutral {neutral}</div>
       <div>bad {bad}</div>
+      <div>all {total}</div>
+      <div>average {(good - bad)/total}</div>
+      <div>positive {(good/total)*100}%</div>
     </div>
   )
 }
