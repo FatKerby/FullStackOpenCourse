@@ -9,9 +9,9 @@ const Header = ({ course }) => {
 const Content = ({ course }) => {
   return (
     <div>
-      <Part part={props.parts[0]} />
-      <Part part={props.parts[1]} />
-      <Part part={props.parts[2]} />
+      {course.parts.map((part, i) => 
+        <Part key={i} part={course.parts[i]} />
+      )}
     </div>
   )
 }
@@ -63,9 +63,6 @@ const App = () => {
       }
     ]
   }
-  console.log(course);
-  console.log(course.name);
-  
 
   return <Course course={course} />
 }
