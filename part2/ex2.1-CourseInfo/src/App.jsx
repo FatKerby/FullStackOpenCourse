@@ -17,11 +17,9 @@ const Content = ({ course }) => {
 }
 
 const Total = ({ course }) => {
-  let total = 0
-  const totalArray = course.parts.map((part) => {
-    total += part.exercises;
-    return {...part, total: total}
-  })
+  const total = course.parts.reduce((accumulator, currentPart) =>
+    accumulator + currentPart.exercises, 0)
+  
   return (
     <div>
       <p>Total of {total} exercises</p>
