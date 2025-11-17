@@ -11,11 +11,18 @@ const App = () => {
 
   const addName = (event) => {
     event.preventDefault()
-    const nameObject = {
-      name: newName,
-      id: String(newName),
+    const isDuplicate = persons.some((person) => person.name === newName)
+
+    if (!isDuplicate) {
+      const nameObject = {
+        name: newName,
+        id: String(newName),
+      }
+      setPersons(persons.concat(nameObject))
+    } else {
+      alert(newName + ' is already added to phonebook.')
     }
-    setPersons(persons.concat(nameObject))
+
     setNewName('')
   }
 
