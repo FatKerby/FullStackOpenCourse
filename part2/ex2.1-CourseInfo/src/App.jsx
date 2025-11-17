@@ -37,15 +37,15 @@ const Part = (props) => {
 
 const Course = ({ course }) => {
     return (
-      <div>
-        {course.map((part, i) =>
-        <div>
-          <Header key={i} course={course[i]} />
-          <Content key={i} course={course[i]} />
-          <Total key={i} course={course[i]} />
-        </div>
-        )}
-      </div>
+      <>
+        {course.map((part, i) => (
+          <div key={part.id}>
+          <Header course={part} />
+          <Content course={part} />
+          <Total course={part} />
+          </div>
+        ))}
+      </>
     )
 }
 
