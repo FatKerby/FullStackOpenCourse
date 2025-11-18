@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import Notification from './components/Notification'
 import personService from './services/persons'
 
 const App = () => {
   const [allPersons, setAllPersons] = useState([])
   const [newPerson, setNewPerson] = useState({ name: "", number: "" })
   const [newFilter, setNewFilter] = useState('')
+  const [notification, setNotification] = useState(null)
 
   useEffect(() => {
     personService
@@ -16,6 +18,17 @@ const App = () => {
         setAllPersons(initialPersons)
       })
   }, [])
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null)
+      }, 3000)
+      return () => {
+        clearTimeout(timer)
+      }
+    }
+  }, [notification])
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -29,6 +42,16 @@ const App = () => {
         .then((returnedPerson) => {
           setAllPersons(allPersons.concat(returnedPerson))
           setNewPerson({ name: "", number: "" })
+          setNotification({
+            type: "success",
+            text: `${returnedPerson.name} was added.`,
+          })
+        })
+        .catch((error) => {
+          setNotification({
+            type: "error",
+            text: error.response?.data?.error || "unknown error",
+          })
         })
     } else {
       if (
@@ -45,6 +68,10 @@ const App = () => {
               )
             )
             setNewPerson({ name: "", number: ""})
+            setNotification({
+              type: "success",
+              text: `${updatedPerson.name} was updated.`
+            })
           })
       }
     }
@@ -76,6 +103,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification notification={notification} />
       <Filter newFilter={newFilter} handleFilterChange={handleFilterChange} />
       <h3>Add a new</h3>
       <PersonForm 
