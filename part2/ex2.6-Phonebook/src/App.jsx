@@ -73,6 +73,23 @@ const App = () => {
               text: `${updatedPerson.name} was updated.`
             })
           })
+          .catch((error) => {
+            if (error.response?.status === 404) {
+              setAllPersons((prevPersons) =>
+              prevPersons.filter((person) => person.id !== isDuplicate.id)
+            )
+            setNotification({
+              type: "error",
+              text: `Information of ${newPerson.name} has already removed from server`,
+            })
+            } else {
+              setNotification({
+                type: "error",
+                text: error.response?.data?.error || "unknown error",
+              })
+            }
+
+          })
       }
     }
   }
