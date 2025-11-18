@@ -29,7 +29,7 @@ const App = () => {
           setNewPerson({ name: "", number: "" })
         })
     } else {
-      alert(newPerson.name + ' is already added to phonebook.')
+      alert(`${newPerson.name} is already added to phonebook.`)
     }
   }
 
@@ -43,6 +43,18 @@ const App = () => {
   const handleFilterChange = (event) => {
     setNewFilter(event.target.value)
 }  
+
+  const handleRemove = (id, name) => {
+    if (window.confirm(`Delete ${name}?`)) {
+      personService
+        .remove(id)
+        .then(() => {
+          setAllPersons((prevPersons) =>
+            prevPersons.filter((person) => person.id !== id)
+          )
+        })
+    }
+  }
 
   return (
     <div>
@@ -58,6 +70,7 @@ const App = () => {
       <Persons
         filterStr={newFilter}
         allPersons={allPersons}
+        handleRemove={handleRemove}
       />
     </div>
   )
