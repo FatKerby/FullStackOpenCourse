@@ -5,8 +5,6 @@ const morgan = require('morgan')
 
 const app = express()
 
-let persons = []
-
 app.use(express.static('dist'))
 app.use(express.json())
 app.use(
@@ -20,19 +18,19 @@ app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
   if (!body.name) {
-    return response.status(400).json({ 
-      error: 'Missing name' 
+    return response.status(400).json({
+      error: 'Missing name'
     })
-  } 
+  }
   if (!body.number) {
-    return response.status(400).json({ 
-      error: 'Missing number' 
+    return response.status(400).json({
+      error: 'Missing number'
     })
   }
   /*
   if (persons.find(person => person.name === body.name)) {
-    return response.status(400).json({ 
-      error: 'Name already exists' 
+    return response.status(400).json({
+      error: 'Name already exists'
     })
   }
   */
@@ -44,7 +42,7 @@ app.post('/api/persons', (request, response, next) => {
 
   person
     .save()
-    .then(savedPerson => {
+    .then(() => {
       response.json(person)
     })
     .catch((error) => {
@@ -72,10 +70,10 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
-    .catch(error => next(error))  
+    .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
