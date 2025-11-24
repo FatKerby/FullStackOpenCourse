@@ -16,11 +16,6 @@ morgan.token('post', (req) => {
   return req.method === 'POST' ? JSON.stringify(req.body) : ' '
 })
 
-
-const generateId = () => {
-  return (Math.random() * 1000)
-}
-
 app.post('/api/persons', (request, response) => {
   const body = request.body
 
@@ -34,21 +29,22 @@ app.post('/api/persons', (request, response) => {
       error: 'Missing number' 
     })
   }
+  /*
   if (persons.find(person => person.name === body.name)) {
     return response.status(400).json({ 
       error: 'Name already exists' 
     })
   }
+  */
 
-  const person = {
+  const person = new Person({
     name: body.name,
     number: body.number,
-    id: generateId(),
-  }
+  })
 
-  persons = persons.concat(person)
-
-  response.json(person)
+  person.save().then(savedPerson => {
+    response.json(person)
+  })
 })
 
 app.get('/api/persons', (request, response) => {
