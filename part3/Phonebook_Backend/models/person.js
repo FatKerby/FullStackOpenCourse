@@ -14,9 +14,23 @@ mongoose.connect(url, { family: 4 })
     console.log('error connecting to MongoDB:', error.message)
   })
 
+  const isValidPhoneNumber = (phoneNumber) => {
+    var pattern = /^\d{2,3}-\d+$/
+    return pattern.test(phoneNumber)
+  }
+
 const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
+  name: {
+    type: String,
+    minLength: 3,
+    required: true,
+  },
+  number: {
+    type: String,
+    minLength: 8,
+    required: true,
+    validate: [isValidPhoneNumber, 'Not a valid number.'],
+  }
 })
 
 personSchema.set('toJSON', {
