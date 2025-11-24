@@ -48,9 +48,11 @@ const App = () => {
           })
         })
         .catch((error) => {
+          console.log(error.response.data.error)
+          
           setNotification({
             type: "error",
-            text: error.response?.data?.error || "unknown error",
+            text: error.response.data.error || "unknown error",
           })
         })
     } else {
