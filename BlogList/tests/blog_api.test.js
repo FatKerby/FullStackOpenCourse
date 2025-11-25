@@ -3,24 +3,10 @@ const { test, after, beforeEach, describe } = require('node:test')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
+const helper = require('./test_helper')
 const Blog = require('../models/blog')
 
 const api = supertest(app)
-
-const initialBlogs = [
-  {  
-    "title": "Test Blog 1",
-    "author": "Tester 1",
-    "url": "test1.url",
-    "likes": 1,
-  },
-  {
-    "title": "Test Blog 2",
-    "author": "Tester 2",
-    "url": "test2.url",
-    "likes": 2,
-  }
-]
 
 const blogsInDb = async () => {
   const blogs = await Blog.find({})
@@ -30,13 +16,13 @@ const blogsInDb = async () => {
 beforeEach(async () => {
   await Blog.deleteMany({})
 
-  await Blog.insertMany(initialBlogs)
+  await Blog.insertMany(helper.initialBlogs)
 })
 
 test('All notes are returned', async () => {
   const response = await api.get('/api/blogs')
 
-  assert.strictEqual(response.body.length, initialBlogs.length)
+  assert.strictEqual(response.body.length, helper.initialBlogs.length)
 })
 
 test('Check "id" property name is not "_id"', async () => {
@@ -63,7 +49,7 @@ test('Check that a valid blog can be added', async () => {
     .expect('Content-Type', /application\/json/)
 
   const blogsAtEnd = await blogsInDb()
-  assert.strictEqual(blogsAtEnd.length, initialBlogs.length + 1)
+  assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
 
   const title = blogsAtEnd.map(n => n.title)
   assert(title.includes('newValidTitle'))
@@ -100,7 +86,7 @@ test('Check that a 400 Bad Request is returned when title is missing', async () 
     .expect(400)
 
   const blogsAtEnd = await blogsInDb()
-  assert.strictEqual(blogsAtEnd.length, initialBlogs.length)
+  assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
 
 })
 
@@ -117,15 +103,35 @@ test('Check that a 400 Bad Request is returned when URL is missing', async () =>
     .expect(400)
 
   const blogsAtEnd = await blogsInDb()
-  assert.strictEqual(blogsAtEnd.length, initialBlogs.length)
+  assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
 
 })
 
-describe('Deletion of a note', () => {
+describe('Updating a blog', () => {
+  test('Succeeds when existing blog is updated', async () => {
+    const blogsAtStart = await blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+    blogToUpdate.likes++
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(200)
+    
+    const blogsAtEnd = await blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+
+    const updatedBlog = blogsAtEnd.find(
+      (blog) => blog.id === blogToUpdate.id
+    )
+    assert.deepStrictEqual(updatedBlog, blogToUpdate)
+  })
+})
+
+describe('Deleting a blog', () => {
   test('Succeeds with status code 204 if id is valid', async () => {
     const blogsAtStart = await blogsInDb()
     const blogToDelete = blogsAtStart[0]
-console.log(blogToDelete.id);
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
@@ -136,7 +142,7 @@ console.log(blogToDelete.id);
     const blogObjects = blogsAtEnd.map(n => n.title)
     assert(!blogObjects.includes(blogToDelete.title))
 
-    assert.strictEqual(blogsAtEnd.length, initialBlogs.length - 1)
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
   })
 })
 
