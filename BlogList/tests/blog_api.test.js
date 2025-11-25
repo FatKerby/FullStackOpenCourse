@@ -8,14 +8,8 @@ const Blog = require('../models/blog')
 
 const api = supertest(app)
 
-const blogsInDb = async () => {
-  const blogs = await Blog.find({})
-  return blogs.map(blog => blog.toJSON())
-}
-
 beforeEach(async () => {
   await Blog.deleteMany({})
-
   await Blog.insertMany(helper.initialBlogs)
 })
 
@@ -48,7 +42,7 @@ test('Check that a valid blog can be added', async () => {
     .expect(201)
     .expect('Content-Type', /application\/json/)
 
-  const blogsAtEnd = await blogsInDb()
+  const blogsAtEnd = await helper.blogsInDb()
   assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
 
   const title = blogsAtEnd.map(n => n.title)
@@ -85,7 +79,7 @@ test('Check that a 400 Bad Request is returned when title is missing', async () 
     .send(noTitleBlog)
     .expect(400)
 
-  const blogsAtEnd = await blogsInDb()
+  const blogsAtEnd = await helper.blogsInDb()
   assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
 
 })
@@ -102,14 +96,14 @@ test('Check that a 400 Bad Request is returned when URL is missing', async () =>
     .send(noURLBlog)
     .expect(400)
 
-  const blogsAtEnd = await blogsInDb()
+  const blogsAtEnd = await helper.blogsInDb()
   assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
 
 })
 
 describe('Updating a blog', () => {
   test('Succeeds when existing blog is updated', async () => {
-    const blogsAtStart = await blogsInDb()
+    const blogsAtStart = await helper.blogsInDb()
     const blogToUpdate = blogsAtStart[0]
     blogToUpdate.likes++
 
@@ -118,7 +112,7 @@ describe('Updating a blog', () => {
       .send(blogToUpdate)
       .expect(200)
     
-    const blogsAtEnd = await blogsInDb()
+    const blogsAtEnd = await helper.blogsInDb()
     assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
 
     const updatedBlog = blogsAtEnd.find(
@@ -130,14 +124,14 @@ describe('Updating a blog', () => {
 
 describe('Deleting a blog', () => {
   test('Succeeds with status code 204 if id is valid', async () => {
-    const blogsAtStart = await blogsInDb()
+    const blogsAtStart = await helper.blogsInDb()
     const blogToDelete = blogsAtStart[0]
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
       .expect(204)
 
-    const blogsAtEnd = await blogsInDb()
+    const blogsAtEnd = await helper.blogsInDb()
 
     const blogObjects = blogsAtEnd.map(n => n.title)
     assert(!blogObjects.includes(blogToDelete.title))
