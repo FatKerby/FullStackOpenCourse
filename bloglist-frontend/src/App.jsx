@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -11,10 +12,12 @@ const App = () => {
   const [notification, setNotification] = useState(null)
   const [user, setUser] = useState(null)
 
+  const blogFormRef = useRef()
+
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )  
+    blogService.getAll().then(blogs => {
+      setBlogs( sortBlogs(blogs) )
+    })
   }, [])
 
   useEffect(() => {
@@ -26,10 +29,10 @@ const App = () => {
     }
   }, [])
 
-  const loginUser = async (loginCredentials) => {  
+  const loginUser = async (loginCredentials) => {
     try {
       const user = await loginService.login(loginCredentials)
-      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user)) 
+      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
       blogService.setToken(user.token)
       setUser(user)
     } catch (error) {
@@ -46,6 +49,7 @@ const App = () => {
   const addBlog = async (newBlog) => {
     try {
       const addedBlog = await blogService.create(newBlog)
+      blogFormRef.current.toggleVisibility()
       setBlogs(blogs.concat(addedBlog))
       handleNotification(
         `A new blog "${addedBlog.title}" by ${addedBlog.author} was added.`,
@@ -55,6 +59,38 @@ const App = () => {
     } catch (error) {
       handleError(error)
       return false
+    }
+  }
+
+  const deleteBlog = async ({ id, title, author }) => {
+    try {
+      await blogService.remove(id)
+      setBlogs(blogs.filter((blog) => blog.id !== id))
+      handleNotification(`Blog "${title}" by ${author} was deleted.`, 'success')
+    } catch (error) {
+      handleError(error)
+    }
+  }
+
+  const sortBlogs = (blogs) => {
+    return blogs.sort((a, b) => b.likes - a.likes)
+  }
+
+  const updateLikes = async (blog) => {
+    const { id, title, author, url, likes } = blog
+    try {
+      const updatedBlog = await blogService.update({
+        id,
+        title,
+        author,
+        url,
+        likes: likes + 1,
+      })
+      setBlogs(
+        sortBlogs(blogs.map((blog) => (blog.id === updatedBlog.id ? updatedBlog : blog)))
+      )
+    } catch (error) {
+      handleError(error)
     }
   }
 
@@ -73,6 +109,13 @@ const App = () => {
     }
   }
 
+  const blogForm = () => (
+    <Togglable buttonLabel="new blog" ref={blogFormRef}>
+      <h2>Create New:</h2>
+      <BlogForm addBlog={addBlog} />
+    </Togglable>
+  )
+
   return (
     <div>
       {!user ? (
@@ -90,13 +133,12 @@ const App = () => {
           </p>
           <button onClick={logOutUser}>Logout</button>
           <br />
-          <h2>Create New:</h2>
-          <BlogForm addBlog={addBlog} />
+          {blogForm()}
           <br />
           <h2>Blog List</h2>
           <div>
             {blogs.map(blog =>
-              <Blog key={blog.id} blog={blog} />
+              <Blog key={blog.id} blog={blog} updateLikes={updateLikes} deleteBlog={deleteBlog} user={user}/>
             )}
           </div>
         </>
