@@ -11,8 +11,6 @@ const Notification = () => {
   }
 
   if (notification === '') {
-    console.log('Showing Blank');
-    
     return null
   }
 
