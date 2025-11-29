@@ -23,25 +23,7 @@ const AnecdoteList = () => {
           anecdote.content.includes(filter)
       ))
   })
-/*
-  return (
-    <>
-      {anecdotes
-        .slice()
-        .sort((a, b) => b.votes - a.votes)
-        .map(anecdote => (
-          <div key={anecdote.id}>
-            <div>{anecdote.content}</div>
-            <div>
-              has {anecdote.votes}
-              <button onClick={() => dispatch(addVote(anecdote.id))}>vote</button>
-            </div>
-          </div>
-        ))
-      }
-    </>
-  )
-*/
+
   return (
     <>
       {anecdotes
