@@ -1,23 +1,43 @@
 import { useState } from 'react'
 
+import {
+  Routes,
+  Route,
+  Link,
+  useParams,
+  useMatch
+} from "react-router-dom"
+
 const Menu = () => {
   const padding = {
     paddingRight: 5
   }
   return (
     <div>
-      <a href='#' style={padding}>anecdotes</a>
-      <a href='#' style={padding}>create new</a>
-      <a href='#' style={padding}>about</a>
+      <Link to='/anecdotes' style={padding}>anecdotes</Link>
+      <Link to='/create' style={padding}>create new</Link>
+      <Link to='/about' style={padding}>about</Link>
     </div>
   )
 }
+
+const ViewAnecdote = ({ anecdote }) => (
+  <div>
+    <h2>{anecdote.content} by {anecdote.author}</h2>
+    <p>has {anecdote.votes} votes</p>
+    <p>for more info see <a href={`${anecdote.info}`}>{anecdote.info}</a></p>
+  </div>
+)
 
 const AnecdoteList = ({ anecdotes }) => (
   <div>
     <h2>Anecdotes</h2>
     <ul>
-      {anecdotes.map(anecdote => <li key={anecdote.id} >{anecdote.content}</li>)}
+      {anecdotes.map(anecdote => 
+        <li key={anecdote.id} >
+          <Link to={`/anecdotes/${anecdote.id}`}>{anecdote.content}</Link>
+        </li>
+      )}
     </ul>
   </div>
 )
@@ -101,6 +121,13 @@ const App = () => {
     }
   ])
 
+  const match = useMatch('/anecdotes/:id')
+  const anecdote = match
+    ? anecdotes.find(anecdote => anecdote.id === Number(match.params.id))
+    : null
+  console.log(anecdote);
+  
+
   const [notification, setNotification] = useState('')
 
   const addNew = (anecdote) => {
@@ -124,11 +151,16 @@ const App = () => {
 
   return (
     <div>
-      <h1>Software anecdotes</h1>
-      <Menu />
-      <AnecdoteList anecdotes={anecdotes} />
-      <About />
-      <CreateNew addNew={addNew} />
+      <div>
+        <h1>Software anecdotes</h1>
+        <Menu />
+      </div>
+      <Routes>
+        <Route path="/anecdotes/:id" element={<ViewAnecdote anecdote={anecdote} />} />
+        <Route path="/anecdotes" element={<AnecdoteList anecdotes={anecdotes} />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/create" element={<CreateNew addNew={addNew} />} />
+      </Routes>
       <Footer />
     </div>
   )
