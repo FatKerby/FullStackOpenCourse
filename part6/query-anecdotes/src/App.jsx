@@ -21,6 +21,9 @@ const App = () => {
         )
       )
       notificationHandler({ content: `anecdote '${updatedAnecdote.content}' voted` })
+    },
+    onError: () => {
+      notificationHandler({ content: `Error: Vote for anecdote '${updateAnecdote.content}' was not updated.` })
     }
   })
 
