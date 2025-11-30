@@ -3,27 +3,30 @@ import Notification from './components/Notification'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAnecdotes, updateAnecdote } from './requests'
+import { useNotificationHandler } from './NotificationContext'
 
 const App = () => {
   const queryClient = useQueryClient()
+  const notificationHandler = useNotificationHandler()
 
   const updateAnecdoteMutation = useMutation({
     mutationFn: updateAnecdote,
     onSuccess: (updatedAnecdote) => {
       const anecdotes = queryClient.getQueryData(['anecdotes'])
-      queryClient.setQueryData(
-        ['anecdotes'], 
+      queryClient.setQueryData(['anecdotes'], 
         anecdotes.map(anecdote =>
           anecdote.id === updatedAnecdote.id 
             ? updatedAnecdote
             : anecdote
         )
       )
+      notificationHandler({ content: `anecdote '${updatedAnecdote.content}' voted` })
     }
   })
 
   const handleVote = (anecdote) => {
     updateAnecdoteMutation.mutate({...anecdote, votes: anecdote.votes + 1})
+
   }
 
   const result = useQuery({
