@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-
+import { useField } from './hooks'
 import {
   Routes,
   Route,
@@ -71,41 +71,46 @@ const Footer = () => (
 )
 
 const CreateNew = ({ addNew, setNotification }) => {
-  const [content, setContent] = useState('')
-  const [author, setAuthor] = useState('')
-  const [info, setInfo] = useState('')
+  const content = useField('text')
+  const author = useField('author')
+  const info = useField('info')
   const navigate = useNavigate()
-
 
   const handleSubmit = (e) => {
     e.preventDefault()
     addNew({
-      content,
-      author,
-      info,
+      content: content.value,
+      author: author.value,
+      info: info.value,
       votes: 0
     })
     navigate('/anecdotes')
-    setNotification(`A new anecdote ${content} was sucessfully created.`)
+    setNotification(`A new anecdote '${content.value}' was sucessfully created.`)
   }
 
+  const handleReset = () => {
+    content.onReset()
+    author.onReset()
+    info.onReset()
+  }
   return (
     <div>
       <h2>create a new anecdote</h2>
-      <form onSubmit={handleSubmit}>
+      <form>
         <div>
           content
-          <input name='content' value={content} onChange={(e) => setContent(e.target.value)} />
+          <input {...content} />
         </div>
         <div>
           author
-          <input name='author' value={author} onChange={(e) => setAuthor(e.target.value)} />
+          <input {...author} />
         </div>
         <div>
           url for more info
-          <input name='info' value={info} onChange={(e)=> setInfo(e.target.value)} />
+          <input {...info} />
         </div>
-        <button>create</button>
+        <button onClick={handleSubmit}>create</button>
+        <button onClick={handleReset}>reset</button>
       </form>
     </div>
   )
@@ -145,7 +150,6 @@ const App = () => {
   const anecdote = match
     ? anecdotes.find(anecdote => anecdote.id === Number(match.params.id))
     : null
-  console.log(anecdote);
 
   const addNew = (anecdote) => {
     anecdote.id = Math.round(Math.random() * 10000)
