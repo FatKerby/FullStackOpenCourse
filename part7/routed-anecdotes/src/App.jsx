@@ -93,6 +93,7 @@ const CreateNew = ({ addNew, setNotification }) => {
     author.onReset()
     info.onReset()
   }
+  
   return (
     <div>
       <h2>create a new anecdote</h2>
