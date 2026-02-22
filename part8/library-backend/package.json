@@ -12,6 +12,8 @@
     "dev": "node --watch index.js"
   },
   "dependencies": {
-    "@apollo/server": "^5.4.0"
+    "@apollo/server": "^5.4.0",
+    "dotenv": "^17.3.1",
+    "mongoose": "^9.2.1"
   }
 }
