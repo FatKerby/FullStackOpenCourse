@@ -37,7 +37,9 @@ const App = () => {
       <Authors show={page === 'authors'} />
       <EditAuthor show={page === 'authors'} />
 
-      <Books show={page === 'books'} />
+      <Books
+        show={page === 'books'}
+      />
 
       <NewBook show={page === 'add'} />
 
