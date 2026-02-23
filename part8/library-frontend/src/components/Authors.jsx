@@ -10,6 +10,8 @@ const Authors = (props) => {
     return <div>loading...</div>
   }
   const authors = result.data.allAuthors
+  console.log({authors});
+  
 
   return (
     <div>
