@@ -11,8 +11,11 @@ const schema = new mongoose.Schema({
     type: Number,
   },
   author: {
+    /*
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Author',
+    */
+   type: String,
   },
   genres: [{ type: String }],
 })
