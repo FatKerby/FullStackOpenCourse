@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useApolloClient } from '@apollo/client/react'
 
 import Authors from './components/Authors'
@@ -6,6 +6,7 @@ import Books from './components/Books'
 import NewBook from './components/NewBook'
 import EditAuthor from './components/EditAuthor'
 import LoginForm from './components/LoginForm'
+import Recommended from './components/Recommended'
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem('library-app-user-token'))
@@ -23,6 +24,9 @@ const App = () => {
       <div>
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
+        {token && (
+          <button onClick={() => setPage('recommended')}>recommended</button>
+        )}
         {token && (
           <button onClick={() => setPage('add')}>add book</button>
         )}
@@ -42,6 +46,8 @@ const App = () => {
       />
 
       <NewBook show={page === 'add'} />
+
+      <Recommended show={page === 'recommended'} />
 
       <LoginForm 
         show={page === 'login'}

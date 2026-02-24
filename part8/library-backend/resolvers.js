@@ -8,21 +8,25 @@ const User = require('./models/user')
 
 const resolvers = {
   Query: {
-    bookCount: async () => Book.collection.countDocuments(),
-    authorCount: async () => Author.collection.countDocuments(),
+    bookCount: () => Book.collection.countDocuments(),
+    authorCount: () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
-      /*
-      if (args.author && args.genre) {
-        return books.filter(book => book.author === args.author && book.genres.includes(args.genre))
-      }
       if (args.author) {
-        return books.filter(book => book.author === args.author)
+        const foundAuthor = await Author.findOne({ name: args.author })
+        if (foundAuthor) {
+          if (args.genre) {
+            return await Book.find({ author: foundAuthor.id, genres: { $in: [args.genre] } }).populate('author')
+          }
+          return await Book.find({ author: foundAuthor.id }).populate('author')
+        }
+        return null
       }
+
       if (args.genre) {
-        return books.filter(book => book.genres.includes(args.genre))
+        return Book.find({ genres: { $in: [args.genre] } }).populate('author')
       }
-      */
-      return Book.find({})
+
+      return Book.find({}).populate('author')
     },
     allAuthors: async () => Author.find({}),
     me: (root, args, context) => {
@@ -30,13 +34,16 @@ const resolvers = {
     }
   },
   Author: {
-    bookCount: (root) => {
-      const foundBooks = books.filter(book => book.author === root.name)
+    bookCount: async (root) => {
+      const foundAuthor = await Author.findOne({ name: root.name })
+      const foundBooks = await Book.find({ author: foundAuthor.id })
       return foundBooks.length
     }
   },
   Mutation: {
     addBook: async (root, args, context) => {
+      const foundBook = await Book.findOne({ title: args.title })
+      const foundAuthor = await Author.findOne({ name: args.author.name })
       const currentUser = context.currentUser
 
       if (!currentUser) {
@@ -47,9 +54,7 @@ const resolvers = {
         })
       }
 
-      const bookExists = await Book.exists({ title: args.title })
-
-      if (bookExists) {
+      if (foundBook) {
         throw new GraphQLError(`Book must be unique: ${args.title}`, {
           extensions: {
             code: 'BAD_USER_INPUT',
@@ -58,10 +63,33 @@ const resolvers = {
         })
       }
 
-      const book = new Book({ ...args })
-      return book.save()
+      if (!foundAuthor) {
+        const author = new Author({ ...args.author })
+        try {
+          await author.save()
+        } catch (error) {
+          throw new GraphQLError(error.message, {
+            invalidArgs: args,
+          })
+        }
+      }
+
+      const savedAuthor = await Author.findOne({ name: args.author.name })
+      const book = new Book({ ...args, author: savedAuthor })
+
+      try {
+        await book.save()
+      } catch (error) {
+        throw new GraphQLError(error.message, {
+          invalidArgs: args
+        })
+      }
+
+      return book
     },
-    editAuthor: async (root, args) => {
+    editAuthor: async (root, args, context) => {
+      const author = await Author.findOne({ name: args.name })
+      
       const currentUser = context.currentUser
 
       if (!currentUser) {
@@ -71,39 +99,36 @@ const resolvers = {
           }
         })
       }
-      
-      const author = await Author.findOne({ name: args.name })
-      if (author) {
-        author.born = args.setBornTo
+
+      if (!author) {
+        return null
       }
-      return null
+
+      const filter = { name: args.name }
+      const options = {}
+      const updateDoc = {
+        $set: {
+          born: args.setBornTo
+        },
+      }
+      console.log({updateDoc});
+      
+      
+      await Author.updateOne(filter, updateDoc, options)
+      const author2 = await Author.findOne({ name: args.name })
+      console.log({author2})
+      
+      return await Author.findOne({ name: args.name })
     },
-    createUser: async (root, args) => {
+    createUser: (root, args) => {
       const user = new User({ ...args })
 
-      try {
-        return await user.save()
-      } catch (error) {
-        let errorMessage = "Creating user failed"
-
-        if (error instanceof mongoose.Error.ValidationError) {
-          console.log(error.message)
-
-          if (error.errors.hasOwnProperty("username")) {
-            errorMessage = "Create user failed. Username not valid."
-          } else if (error.errors.hasOwnProperty("favoriteGenre")) {
-            errorMessage = "Create user failed. Favorite genre not valid."
-          }
-          throw new GraphQLError(errorMessage, {
-            extensions: {
-              code: "BAD_USER_INPUT",
-            },
+      return user.save()
+        .catch(err => {
+          throw new GraphQLError(err.message, {
+            invalidArgs: args,
           })
-        } else {
-          console.log(error)
-          throw new GraphQLError(errorMessage)
-        }
-      }
+        })
     },
     login: async (root, args) => {
       const user = await User.findOne({ username: args.username })
@@ -121,7 +146,7 @@ const resolvers = {
         id: user._id,
       }
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
-    }
+    },
   }
 }
 

@@ -6,10 +6,15 @@ const typeDefs = /* GraphQL */`
     id: ID!
   }
 
+  input AuthorInput {
+    name: String!
+    born: Int
+  }
+
   type Book {
     title: String!
     published: Int!
-    author: String!
+    author: Author!
     genres: [String!]!
     id: ID!
   }
@@ -36,7 +41,7 @@ const typeDefs = /* GraphQL */`
     addBook(
       title: String!
       published: Int!
-      author: String!
+      author: AuthorInput!
       genres: [String!]!
     ): Book
     editAuthor(

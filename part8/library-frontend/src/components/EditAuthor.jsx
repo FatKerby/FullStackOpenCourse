@@ -4,7 +4,7 @@ import { ALL_AUTHORS, EDIT_AUTHOR } from '../queries'
 
 export const EditAuthor = (props) => {
   const [name, setName] = useState('')
-  const [born, setBorn] = useState('')
+  const [setBornTo, setBorn] = useState('')
   const result = useQuery(ALL_AUTHORS)
 
   const [updatedAuthor] = useMutation(EDIT_AUTHOR, {
@@ -23,7 +23,7 @@ export const EditAuthor = (props) => {
   const submit = async (event) => {
     event.preventDefault()
 
-    updatedAuthor({ variables: { name, setBornTo: born } })
+    updatedAuthor({ variables: { name, setBornTo } })
 
     setName('')
     setBorn('')
@@ -47,7 +47,7 @@ export const EditAuthor = (props) => {
           born:
           <input
             type="number"
-            value={born}
+            value={setBornTo}
             onChange={({ target }) => setBorn(Number(target.value))}
           />
         </div>
