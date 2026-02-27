@@ -8,6 +8,7 @@ const typeDefs = /* GraphQL */ `
     name: String!
     phone: String
     address: Address!
+    friendOf: [User!]!
     id: ID!
   }
 
@@ -20,6 +21,10 @@ const typeDefs = /* GraphQL */ `
     username: String!
     friends: [Person!]!
     id: ID!
+  }
+
+  type Subscription {
+    personAdded: Person!
   }
 
   type Token {
