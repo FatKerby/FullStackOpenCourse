@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useApolloClient } from '@apollo/client/react'
+import { useState, useEffect } from 'react'
+import { useApolloClient, useSubscription } from '@apollo/client/react'
 
 import Authors from './components/Authors'
 import Books from './components/Books'
@@ -7,10 +7,14 @@ import NewBook from './components/NewBook'
 import EditAuthor from './components/EditAuthor'
 import LoginForm from './components/LoginForm'
 import Recommended from './components/Recommended'
+import Notify from './components/Notify'
+
+import { BOOK_ADDED } from "./queries"
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem('library-app-user-token'))
   const [page, setPage] = useState('authors')
+  const [errorMessage, setErrorMessage] = useState(null)
   const client = useApolloClient()
 
   const onLogout = () => {
@@ -18,6 +22,20 @@ const App = () => {
     localStorage.clear()
     client.resetStore()
   }
+
+  const notify = (message) => {
+    setErrorMessage(message)
+    setTimeout(() => {
+      setErrorMessage(null)
+    }, 10000)
+  }
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      const addedBook = data.data.bookAdded
+      notify(`${addedBook.title} was added.`)
+    },
+  })
 
   return (
     <div>
@@ -38,6 +56,7 @@ const App = () => {
         )}
       </div>
 
+      <Notify errorMessage={errorMessage} />
       <Authors show={page === 'authors'} />
       <EditAuthor show={page === 'authors'} />
 

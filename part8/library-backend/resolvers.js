@@ -1,10 +1,12 @@
-const mongoose = require("mongoose")
-const jwt = require("jsonwebtoken")
 const { GraphQLError } = require('graphql')
+const { PubSub } = require('graphql-subscriptions')
+const jwt = require("jsonwebtoken")
 
 const Book = require('./models/book')
 const Author = require('./models/author')
 const User = require('./models/user')
+
+const pubsub = new PubSub()
 
 const resolvers = {
   Query: {
@@ -42,17 +44,9 @@ const resolvers = {
   },
   Mutation: {
     addBook: async (root, args, context) => {
+      const currentUser = context.currentUser
       const foundBook = await Book.findOne({ title: args.title })
       const foundAuthor = await Author.findOne({ name: args.author.name })
-      const currentUser = context.currentUser
-
-      if (!currentUser) {
-        throw new GraphQLError('User not authenticated.', {
-          extensions: {
-            code: 'UNAUTHENTICATED',
-          }
-        })
-      }
 
       if (foundBook) {
         throw new GraphQLError(`Book must be unique: ${args.title}`, {
@@ -64,10 +58,14 @@ const resolvers = {
       }
 
       if (!foundAuthor) {
+        console.log("author not found.");
+        
         const author = new Author({ ...args.author })
         try {
           await author.save()
         } catch (error) {
+          console.log("author not added.");
+          
           throw new GraphQLError(error.message, {
             invalidArgs: args,
           })
@@ -79,12 +77,14 @@ const resolvers = {
 
       try {
         await book.save()
+        await book.populate("author")
       } catch (error) {
         throw new GraphQLError(error.message, {
           invalidArgs: args
         })
       }
 
+      pubsub.publish('BOOK_ADDED', { bookAdded: book })
       return book
     },
     editAuthor: async (root, args, context) => {
@@ -147,7 +147,12 @@ const resolvers = {
       }
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
     },
-  }
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterableIterator('BOOK_ADDED')
+    },
+  },
 }
 
 module.exports = resolvers
