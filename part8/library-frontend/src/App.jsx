@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useApolloClient, useSubscription } from '@apollo/client/react'
 
 import Authors from './components/Authors'
@@ -8,6 +8,8 @@ import EditAuthor from './components/EditAuthor'
 import LoginForm from './components/LoginForm'
 import Recommended from './components/Recommended'
 import Notify from './components/Notify'
+
+import { addBookToCache } from './utils/apolloCache'
 
 import { BOOK_ADDED } from "./queries"
 
@@ -34,6 +36,7 @@ const App = () => {
     onData: ({ data }) => {
       const addedBook = data.data.bookAdded
       notify(`${addedBook.title} was added.`)
+      addBookToCache(client.cache, addedBook)
     },
   })
 
