@@ -42,8 +42,32 @@ const exerciseCalculator = (exercisesTotal: Array<number>, goal: number): Result
   }
 }
 
+interface processValuesExercise {
+  exercisesTotal: Array<number>;
+  goal: number;
+}
+
+const parseArgumentsExercise = (args: string[]): processValuesExercise => {
+  if (args.length < 4) {
+    throw new Error('Not enough arguments.');
+  }
+
+  const exercisesArray = args.filter((a, index) => index >= 3);
+
+  if (exercisesArray.every(value => !isNaN(Number(value)))
+    && !isNaN(Number(args[2]))) {
+      return {
+        goal: Number(args[2]),
+        exercisesTotal: exercisesArray.map(ex => Number(ex))
+      }
+  } else {
+    throw new Error('Provided values must be numbers.');
+  }
+}
+
 try {
-  console.log(exerciseCalculator([3, 0, 2, 4.5, 0, 3, 1], 2));
+  const { goal, exercisesTotal } = parseArgumentsExercise(process.argv);
+  console.log(exerciseCalculator(exercisesTotal, goal));
 } catch (error: unknown) {
   let errorMessage = 'Something bad happened.'
   if (error instanceof Error) {
