@@ -8,7 +8,7 @@ interface Result {
   average: number;
 }
 
-const exerciseCalculator = (exercisesTotal: Array<number>, goal: number): Result => {
+export const exerciseCalculator = (exercisesTotal: Array<number>, goal: number): Result => {
   const periodLength = exercisesTotal.length;
   const trainingDays = exercisesTotal.filter(day => day > 0).length;
   const totalHours = exercisesTotal.reduce((hours, sum) => hours + sum, 0);
@@ -47,7 +47,7 @@ interface processValuesExercise {
   goal: number;
 }
 
-const parseArgumentsExercise = (args: string[]): processValuesExercise => {
+export const parseArgumentsExercise = (args: string[]): processValuesExercise => {
   if (args.length < 4) {
     throw new Error('Not enough arguments.');
   }

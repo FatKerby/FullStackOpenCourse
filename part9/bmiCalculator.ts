@@ -1,4 +1,4 @@
-const calculateBmi = (height: number, weight: number) => {
+export const calculateBmi = (height: number, weight: number) => {
   if (weight <= 0) {
     return "Error. Weight must be greater than 0.";
   }
