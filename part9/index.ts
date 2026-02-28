@@ -18,7 +18,7 @@ app.get('/bmi', (req, res) => {
     resultsJson = { weight, height, bmi };
   }
   res.send(JSON.stringify(resultsJson));
-})
+});
 
 const PORT = 3003;
 
